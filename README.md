@@ -1,13 +1,53 @@
-# WaterConservationApp3D
-A Game Simulation For Water Conservation. It is basically an Educational Tool
-
 # Water Conservation Challenge — 3D Desktop Build
 
 A full 3D desktop implementation of the Water Conservation Educational Tool
 spec (FR-01 to FR-09), built with Three.js and packaged as an Electron
 desktop app. No game engine install required — just Node.js.
 
-## What's new in this version
+## What's new in this version — Reward "Juice" Layer, Quest Markers & Rig Polish
+
+A focused pass on *feel* rather than new mechanics: every existing system
+(collection, routing, filtering, quizzes, badges) now gives sharper,
+game-like feedback in the moment, on top of the reward logic that was
+already there.
+
+- **New `js/effects.js` module** — particle bursts (blue water-droplet
+  splash, gold sparkle, multicolour confetti), floating "+N" reward popups
+  projected from world space onto the screen, and a full-screen flash. Built
+  from `THREE.Points` and small DOM/canvas sprites only — no textures, no
+  external assets, fully offline, same "no engine, no build step" philosophy
+  as the rest of the project.
+- **Combo/streak reward system**: clean collections at Water Warden,
+  correct quiz answers, and other "good actions" now chain into a streak
+  multiplier (1x → 1.5x at 3 in a row → 2x at 6 → up to 3x at 12+) if kept up
+  within a 6-second window. Streaks pay out small bonus points with an
+  escalating popup + chime every 3rd hit, layered on top of (not replacing)
+  the existing +100-per-challenge and badge points.
+- **NPC quest markers**: a bobbing gold "!" now floats above any NPC with an
+  unclaimed challenge or stage on offer, so the next objective is legible
+  from a distance instead of only discoverable by walking up to each NPC.
+  NPCs also wave (reusing the existing procedural gesture) the first time
+  you enter their radius while a quest is pending.
+- **Reward moments now have visual+audio payoff**: badge awards and
+  challenge completions trigger a confetti burst and screen flash at the
+  player's position; bucket placement, clean-water pickup, correct
+  pipe-routing, and starting the filter each get a matching splash/sparkle
+  particle burst instead of just a sound and a HUD number change.
+- **Idle rig polish**: characters now do a slow idle head-turn ("looking
+  around") in addition to the existing breathing sway, so NPCs read as
+  alive rather than frozen when you're not interacting with them.
+
+**Honest scope note on this pass**: this was a feedback/"juice" layer on
+top of the existing systems, not a structural rebuild. It does **not**
+include imported skeletal rigs (see "Known simplifications" below — the
+characters are still procedurally-built capsule/sphere rigs, not glTF
+models with bone hierarchies) or autonomous NPC *agents* (the villagers
+still wander on a simple scripted loop, and quest-giving NPCs are still
+state-machine driven, not goal-directed). Both would be substantial
+follow-on projects rather than something to bolt on safely in one pass —
+see "Extending it" at the bottom for the natural next steps and why.
+
+## What's new in the previous version — World & Cartoon Overhaul
 
 - **Fixed camera bug**: adjusting the camera-angle slider in Settings now updates the view live, even while the menu is open (previously the whole game — including the camera — froze while Settings was open).
 - **Easier navigation**: default camera now leans top-down out of the box (matches the fixed-direction WASD controls much more intuitively), tracks you more tightly, and a bright ground-facing arrow always shows which way you're heading regardless of camera angle.
@@ -170,7 +210,7 @@ Produces a `.exe` / `.dmg` / `.AppImage` in `dist/` via electron-builder.
 | FR-02 | Greywater Pipe-Routing Challenge | "Pipe-Fitter Pete" zone — place pipe tiles on a grid to connect sink → garden, validated by pathfinding, animated water flow on success |
 | FR-03 | Filtration System Build Challenge | "Filter Fundi" zone — collect coarse sand/fine sand/gravel, install in correct order, then a real turbidity-drop simulation as water filters through |
 | FR-04 | NPC Dialogue & Quest System | Each NPC gates its challenge behind a dialogue trigger, spoken aloud via TTS with a distinct voice profile |
-| FR-05 | Gamification Reward System | Points per action, litres/impact feedback text, 5 badge types, audio + toast feedback |
+| FR-05 | Gamification Reward System | Points per action with a 6s combo/streak multiplier (up to 3x), litres/impact feedback text, 5 badge types, audio + particle/popup + toast feedback |
 | FR-06 | Player Inventory Management | Bottom-left HUD shows carried bucket / collected filtration materials / turbidity reading contextually |
 | FR-07 | Post-Challenge Assessment Quiz | 3 randomly-selected questions (from a bank of 5) per challenge after each completion, with explanatory feedback |
 | FR-08 | Player Profile & Auto-Save | JSON profile (progress, points, badges, quiz scores, settings) saved via Electron's main process, restored on next launch |
@@ -216,17 +256,30 @@ js/
   i18n.js              7-language translation dictionary + t() helper
   audio.js             Procedural Web Audio SFX/ambient + Web Speech TTS
   environment.js       Trees, flowers, rural village, wandering villagers
+  effects.js           Particle bursts, floating reward popups, screen flash
   game.js              Scene, characters, all 3 challenges, gamification,
-                        quiz engine, settings, minimap, save/load, main loop
+                        combo/streak rewards, quest markers, quiz engine,
+                        settings, minimap, save/load, main loop
 ```
 
 ## Extending it
 
 Everything is plain, editable JavaScript with clear section comments — no
-build step, no compiled assets. Natural next steps: get the 5 draft
-translations reviewed by native speakers, wire up the AI-assisted quiz
-question path with a user-supplied API key, add CSV export for SO2
-analysis, or swap the blocky humanoids for imported glTF character models
-if you later get access to rigged assets (Three.js's GLTFLoader would drop
-in cleanly on top of the existing scene setup).
+build step, no compiled assets. Natural next steps:
 
+- Get the 5 draft translations reviewed by native speakers.
+- Wire up the AI-assisted quiz question path with a user-supplied API key.
+- Add CSV export for SO2 analysis.
+- **Real skeletal rigs**: swap `createHumanoid()`'s procedural capsule/sphere
+  rig for imported glTF character models once you have (or commission)
+  rigged assets — Three.js's `GLTFLoader` and `AnimationMixer` drop in
+  cleanly on top of the existing scene/update-loop structure; `animateRig()`
+  is the single choke point that would be replaced by mixer playback calls.
+- **NPC agents**: give the wandering villagers and quest NPCs actual
+  goal-directed behaviour (e.g. a small finite-state or utility-AI layer
+  choosing between wander/approach-player/react-to-event) instead of the
+  current scripted wander loop and static dialogue triggers — `js/game.js`'s
+  `registerNpcInteractable()` and `environment.js`'s wanderer update are the
+  natural insertion points.
+- Extend the new combo/streak system (`js/game.js`) to the pipe-routing and
+  filtration challenges' per-action moments, not just collection and quizzes.
