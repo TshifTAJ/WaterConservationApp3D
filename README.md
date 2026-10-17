@@ -4,10 +4,7 @@ A full 3D desktop implementation of the Water Conservation Educational Tool
 spec (FR-01 to FR-09), built with Three.js and packaged as an Electron
 desktop app. No game engine install required — just Node.js.
 
-# Water Conservation Challenge — 3D Desktop Build
 
-A full 3D desktop implementation of the Water Conservation Educational Tool
-spec (FR-01 to FR-09).
 
 ## What's new in this version (v1.3) — Fixes from live playtesting feedback
 
