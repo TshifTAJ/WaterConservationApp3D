@@ -1,10 +1,86 @@
-# Water Conservation Challenge — 3D Desktop Build
+# Water Conservation Challenge — 3D Desktop Build (No Unity)
 
 A full 3D desktop implementation of the Water Conservation Educational Tool
 spec (FR-01 to FR-09), built with Three.js and packaged as an Electron
 desktop app. No game engine install required — just Node.js.
 
-## What's new in this version — Reward "Juice" Layer, Quest Markers & Rig Polish
+# Water Conservation Challenge — 3D Desktop Build (No Unity)
+
+A full 3D desktop implementation of the Water Conservation Educational Tool
+spec (FR-01 to FR-09), built with Three.js and packaged as an Electron
+desktop app. No game engine install required — just Node.js.
+
+## What's new in this version (v1.3) — Fixes from live playtesting feedback
+
+This round addresses a second batch of concrete feedback — layout, scoring
+fairness, voice/music behaviour, quiz variety, task repetitiveness, and
+keeping facts current — on top of the earlier group-testing fixes (tutorial,
+pause menu, carry-to-tank rainwater, wrong-destination failure, manual
+filter-layer ordering, task history, badge-before-quiz, wayfinding).
+
+- **HUD moved to the bottom of the screen.** Points, the timer, prompts,
+  feedback, dialogue, the objective, inventory and the stage-progress bar
+  all now sit along the bottom edge. The top and centre of the screen are
+  kept clear during gameplay.
+- **Point penalties for mistakes**, not just missed rewards: overfilling the
+  rainwater tank, letting dirty first-flush water in, flooding with the
+  valve closed, a wrong greywater destination or load, a wrong filter
+  layer, a wrong disinfection/fix station, and running out of time all now
+  deduct points (shown in the feedback card and the briefing). Your total
+  never drops below 0, and practice replays are never penalised.
+- **Voice narrates what to do next.** After every stage — success or
+  failure — an NPC speaks (and shows as text) exactly what to do next:
+  which character to find next, or to try the same stage again.
+- **Personal background-music playlist.** Settings → "Play my own music"
+  lets you add your own audio files for this session; whichever source is
+  playing (your playlist or the built-in ambient pad) automatically pauses
+  for every spoken instruction and resumes once it has finished.
+- **Instructions follow the selected language.** Spoken lines use a voice
+  for that language where the OS has one installed (Settings shows exactly
+  which voice, or that none was found); on-screen instruction text is fully
+  translated for English and Afrikaans. The other five languages currently
+  cover the menus only — see the note in Settings and under "Known
+  simplifications" below.
+- **Quizzes are randomised, not fixed.** Each challenge now has a pool of
+  7–8 questions; the 3 asked after a stage are chosen at random (preferring
+  ones you haven't seen yet) and their answer order is reshuffled every
+  time, so replaying a stage doesn't show the same quiz.
+- **Every stage is now a genuinely different task**, not a reskin of Stage 1,
+  while still teaching the same underlying technique:
+  - **Rainwater** — S1 *Collect & Store* (carry a bucket to a capped tank);
+    S2 *First-Flush Diverter* (switch flow between drain and tank as rain
+    falls, so the dirty first flush never reaches storage); S3 *Storm
+    Manager* (open the overflow valve before a surge and water three
+    garden beds from the stored water).
+  - **Greywater** — S1 *Pipe Connection* (route pipe from sink to garden);
+    S2 *Source Sorting* (test four household water sources, decide
+    reuse-vs-sewer, fit filter traps); S3 *Diversion Valve* (switch a valve
+    in time as a sequence of loads flows past).
+  - **Filtration** — S1 *Build & Filter* (choose and install sand/gravel
+    layers in the right order, then filter river water); S2 *Disinfection
+    Bench* (match a real-world scenario to the right treatment method —
+    boiling, chlorine, or solar disinfection); S3 *Fault Finder* (diagnose
+    and fix a broken filter).
+- **Online fact updates.** Whenever the game detects an internet connection,
+  it fetches a few short, validated facts about these same water topics from
+  Wikipedia's lead-paragraph summary API (the only external source used, and
+  only over plain HTTPS) and adds any new ones to the Facts Journal, each
+  attributed with its source. This is a secondary, best-effort source: the
+  curated, hand-written facts already in the Journal are unaffected, and
+  nothing is ever rewritten — only added to. The Journal's "Update facts"
+  button retries manually, and the game works fully offline.
+
+**Honest scope note on this pass**: the ladder order (each NPC's next stage
+unlocks only once every NPC has finished its current stage) and the
+point-farming prevention from the previous round are unchanged — practice
+replays still award nothing. The personal playlist lasts for the current
+session only (it isn't written to disk), since a 3D desktop prototype
+reaching out to arbitrary local files on every launch is more than this
+project needs; the online fact feed is read-only and limited to a short,
+fixed topic list rather than a general-purpose search, by design, to keep
+what gets shown trustworthy. See "Known simplifications" for more.
+
+## What's new in a previous version — Reward "Juice" Layer, Quest Markers & Rig Polish
 
 A focused pass on *feel* rather than new mechanics: every existing system
 (collection, routing, filtering, quizzes, badges) now gives sharper,
@@ -198,30 +274,53 @@ Produces a `.exe` / `.dmg` / `.AppImage` in `dist/` via electron-builder.
 
 ## Controls
 
-- **WASD / Arrow Keys** — move
-- **E** — interact (talk to NPCs, place/collect items, build layers)
-- **Esc** or the gear icon — open/close Settings
+- **WASD / Arrow Keys** — move (relative to the camera)
+- **Z / X** — rotate the camera
+- **E** — interact (talk, place/pick up, pour, collect, build, switch, fix)
+- **F** — fit a filter trap (Greywater Stage 2)
+- **1 / 2 / 3** — choose a material or decision where offered
+- **J** — open the Journal (Facts / Progress / Controls)
+- **Esc** — pause menu (Resume / Settings / Journal / Quit); the gear icon opens Settings directly
 
 ## What's implemented (mapped to the spec)
 
 | FR | Feature | Where |
 |----|---------|-------|
-| FR-01 | Rainwater Collection Challenge | "Water Warden" zone — place/fill/collect bucket across 3 checkpoints, 60s timer, 50L target, splash effects |
-| FR-02 | Greywater Pipe-Routing Challenge | "Pipe-Fitter Pete" zone — place pipe tiles on a grid to connect sink → garden, validated by pathfinding, animated water flow on success |
-| FR-03 | Filtration System Build Challenge | "Filter Fundi" zone — collect coarse sand/fine sand/gravel, install in correct order, then a real turbidity-drop simulation as water filters through |
-| FR-04 | NPC Dialogue & Quest System | Each NPC gates its challenge behind a dialogue trigger, spoken aloud via TTS with a distinct voice profile |
-| FR-05 | Gamification Reward System | Points per action with a 6s combo/streak multiplier (up to 3x), litres/impact feedback text, 5 badge types, audio + particle/popup + toast feedback |
-| FR-06 | Player Inventory Management | Bottom-left HUD shows carried bucket / collected filtration materials / turbidity reading contextually |
-| FR-07 | Post-Challenge Assessment Quiz | 3 randomly-selected questions (from a bank of 5) per challenge after each completion, with explanatory feedback |
-| FR-08 | Player Profile & Auto-Save | JSON profile (progress, points, badges, quiz scores, settings) saved via Electron's main process, restored on next launch |
-| FR-09 | Tutorial / First-Run Onboarding | Welcome modal shown only on first launch; Settings menu covers configuration beyond onboarding |
+| FR-01 | Rainwater Collection Challenge | "Water Warden" — 3 stages: carry-bucket-to-tank (capped, overflow penalised), first-flush diverter, storm/overflow manager |
+| FR-02 | Greywater Pipe-Routing Challenge | "Pipe-Fitter Pete" — 3 stages: pipe-routing puzzle (BFS-validated), source sorting with filter traps, timed diversion valve |
+| FR-03 | Filtration System Build Challenge | "Filter Fundi" — 3 stages: manual layer build + turbidity simulation, disinfection-method matching, fault diagnosis |
+| FR-04 | NPC Dialogue & Quest System | Each NPC gates its challenge behind a dialogue trigger, spoken via TTS in the selected language, with the next step announced after every attempt |
+| FR-05 | Gamification Reward System | Points per action with a 6s combo/streak multiplier, point penalties for mistakes, litres/impact feedback, badges, audio + particle/popup + toast feedback |
+| FR-06 | Player Inventory Management | Bottom HUD shows carried items / collected materials / turbidity reading contextually |
+| FR-07 | Post-Challenge Assessment Quiz | 3 randomly-selected questions per stage (from a pool of 7–8 per challenge), answer order reshuffled, with explanatory feedback |
+| FR-08 | Player Profile & Auto-Save | JSON profile (progress, points, badges, quiz history, settings) saved via Electron's main process and to localStorage, restored on next launch |
+| FR-09 | Tutorial / First-Run Onboarding | Welcome modal shown only on first launch; pause menu and Settings cover configuration beyond onboarding |
 
 ## Known simplifications and honest limitations
 
 - **Voice acting**: uses offline OS text-to-speech, not recorded human
   voices — that requires either voice actors or paid cloud APIs.
-- **5 of the 7 languages are draft-quality**: see the note above. Afrikaans
-  and English are higher-confidence; the others need native-speaker review.
+- **5 of the 7 languages are draft-quality for menus, and English-only for
+  in-game instructions**: Afrikaans and English have full coverage of both
+  menus and dynamic instruction text (`tx()` in `js/i18n.js`); isiZulu,
+  Sesotho, Setswana, isiXhosa and Tshivenda currently cover the static
+  menus only (via `t()`) — selecting one of them still switches the menus,
+  but briefings, feedback, prompts and spoken lines fall back to English
+  until a home-language speaker can translate and review the `tx()` table.
+  This is disclosed to the player directly in Settings.
+- **The personal music playlist is session-only**: songs added in Settings
+  play for as long as the game is open but aren't written to disk, so
+  they need to be re-added next launch. Saving them across sessions would
+  need either file-system access wired through Electron's main process or
+  browser storage of the audio data itself — both reasonable follow-ups,
+  but more than this feature needed for a first pass.
+- **Online fact updates are deliberately narrow**: only Wikipedia's lead-
+  paragraph summary API, over HTTPS, for a short fixed list of water-related
+  topics, with validation (standard articles only, sentence-length and
+  topic-word checks) before anything is added to the Journal. This keeps
+  what gets shown trustworthy, but means it can't answer open-ended
+  questions or pull from arbitrary sources — a deliberate trade-off for an
+  offline-first educational tool, not a general research assistant.
 - **Online AI-assisted questions**: not wired up. It would need your own
   Anthropic/OpenAI API key (not something I can embed for you), and calling
   a cloud LLM API directly from an Electron renderer typically runs into
@@ -253,13 +352,16 @@ index.html             Page shell + all UI overlay elements (HUD, minimap, setti
 style.css               UI styling
 vendor/three.min.js      Vendored Three.js (offline, no CDN dependency)
 js/
-  i18n.js              7-language translation dictionary + t() helper
-  audio.js             Procedural Web Audio SFX/ambient + Web Speech TTS
+  i18n.js              7-language menu dictionary (t()) + dynamic in-game
+                        text translator (tx()), EN/AF fully covered
+  audio.js             Procedural Web Audio SFX/ambient pad, personal music
+                        playlist with speech-ducking, language-aware TTS
   environment.js       Trees, flowers, rural village, wandering villagers
   effects.js           Particle bursts, floating reward popups, screen flash
-  game.js              Scene, characters, all 3 challenges, gamification,
-                        combo/streak rewards, quest markers, quiz engine,
-                        settings, minimap, save/load, main loop
+  game.js              Scene, characters, all 9 stages (3 challenges x 3
+                        distinct stages each), penalties, combo/streak
+                        rewards, randomised quiz engine, online fact
+                        updates, settings, minimap, save/load, main loop
 ```
 
 ## Extending it
